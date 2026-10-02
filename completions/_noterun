@@ -1,0 +1,40 @@
+#compdef noterun
+# zsh completion for noterun. Chunk labels come from `noterun list NOTE --names`.
+
+_noterun_labels() {
+  local note=${(Q)line[1]}
+  note=${note/#\~/$HOME}
+  local -a labels
+  labels=(${(f)"$(noterun list "$note" --names 2>/dev/null)"})
+  compadd -V names -- $labels
+}
+
+_noterun() {
+  local -a cmds=(
+    'run:run a note and rewrite its outputs'
+    'check:rerun and diff without writing'
+    'console:run setup through a chunk, then stay in IPython'
+    'chunk:print one chunk output without writing'
+    'export:write a notebook beside the note'
+    'list:list chunks of a note or folder'
+    'find:search stored outputs'
+  )
+  local -a rt=('--python=[interpreter]:python:_files' '--cwd=[working directory]:dir:_files -/'
+               '--env=[KEY=VALUE]:pair:')
+  local state
+  _arguments -C '1: :->cmd' '*:: :->args'
+  case $state in
+    cmd) _describe command cmds ;;
+    args)
+      case $line[1] in
+        run|check) _arguments $rt '--timeout=[seconds]:s:' '1:note:_files -g "*.md(-.)" -/' ;;
+        chunk) _arguments $rt '--timeout=[seconds]:s:' '1:note:_files -g "*.md(-.)" -/' '2:chunk:_noterun_labels' ;;
+        console) _arguments $rt '--to=[chunk]:chunk:_noterun_labels' '1:note:_files -g "*.md(-.)"' ;;
+        export) _arguments '1:note:_files -g "*.md(-.)"' ;;
+        list) _arguments '--names[bare runnable labels]' '1:path:_files -g "*.md(-.)" -/' ;;
+        find) _arguments '1:value:' '2:dir:_files -/' ;;
+      esac ;;
+  esac
+}
+
+_noterun "$@"
