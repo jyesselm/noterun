@@ -157,6 +157,32 @@ def test_unset_variable_raises_naming_variable_and_file(
     assert "NR_UNSET" in str(exc.value) and declared in str(exc.value)
 
 
+@pytest.mark.parametrize("value", ["/opt/$NR_UNSET/python", "price$NR_UNSET", "${NR_UNSET}"])
+def test_unset_variable_anywhere_in_value_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    monkeypatch.delenv("NR_UNSET", raising=False)
+    note = note_at(tmp_path / "n.md", run_python=value)
+    with pytest.raises(NoterunError, match="NR_UNSET is not set"):
+        resolve_runtime(note, Overrides())
+
+
+def test_empty_variable_counts_as_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NR_EMPTY", "")
+    note = note_at(tmp_path / "n.md", run_cwd="${NR_EMPTY}")
+    with pytest.raises(NoterunError, match="NR_EMPTY is not set"):
+        resolve_runtime(note, Overrides())
+
+
+def test_literal_dollar_and_unknown_forms_pass_through(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("NR_SET", "${literal}")
+    note = note_at(tmp_path / "n.md", run_env="A=$ B=${NR_SET:-d} C=${NR_SET}")
+    env = resolve_runtime(note, Overrides()).env
+    assert env == {"A": "$", "B": "${NR_SET:-d}", "C": "${literal}"}
+
+
 def test_package_is_python39_syntax() -> None:
     import noterun
 

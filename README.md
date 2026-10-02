@@ -1,8 +1,9 @@
 # noterun
 
 Run the ```python chunks of an Obsidian note in the note's declared interpreter, keep each chunk's
-stdout in an ```output fence under it, and save matplotlib figures as embeds. Standard library
-only. The note format is described in the Explainer Template in the vault.
+stdout in an ```output fence under it, and save matplotlib figures as embeds. No dependencies
+beyond the standard library (Python 3.9 and 3.10 also pull in `tomli` for TOML). The note format
+is described in the Explainer Template in the vault.
 
 ## Install
 

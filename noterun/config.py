@@ -9,17 +9,19 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from noterun.note import Note, NoterunError
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ImportError:  # Python < 3.11
-    import tomli as tomllib  # type: ignore[no-redef,import-not-found]
+else:
+    import tomli as tomllib
 
 CONFIG_NAME = ".noterun.toml"
+VARIABLE = re.compile(r"\$(\w+)|\$\{(\w+)\}")
 RUN_KEYS = ("run-python", "run-cwd", "run-env")
 DEFAULT_TIMEOUT_S = 600.0
 
@@ -66,12 +68,12 @@ def load_config(path: Path) -> dict[str, str]:
 
 
 def _expand(value: str, origin: Path) -> str:
-    """Expand `${VAR}` then `~`; an unset variable raises, naming the variable and `origin`."""
-    out = os.path.expanduser(os.path.expandvars(value))
-    if "${" in out or out.startswith("$"):
-        unset = ", ".join(m for m in re.findall(r"\$\{?(\w+)", value) if m not in os.environ)
-        raise NoterunError(f"{origin}: environment variable {unset} is not set")
-    return out
+    """Expand `$VAR`/`${VAR}` then `~`; an unset or empty variable raises, naming the file."""
+    for match in VARIABLE.finditer(value):
+        name = match.group(1) or match.group(2)
+        if not os.environ.get(name):
+            raise NoterunError(f"{origin}: environment variable {name} is not set")
+    return os.path.expanduser(os.path.expandvars(value))
 
 
 def parse_env(spec: str, origin: Path | None = None) -> dict[str, str]:
@@ -125,6 +127,8 @@ def resolve_runtime(note: Note, overrides: Overrides) -> Runtime:
         env.update(parse_env(values.get("run-env", ""), origin))
     for pair in overrides.env:
         env.update(parse_env(pair))
-    python = (str(_path(py, py_base)) if os.sep in py else py) if py else None
+    python = None
+    if py:
+        python = str(_path(py, py_base)) if os.sep in py else py
     workdir = _path(cwd, cwd_base) if cwd else note_dir
     return Runtime(python, workdir, env, overrides.timeout_s)

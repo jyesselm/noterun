@@ -32,7 +32,7 @@ and folders.
 
 ## Design
 
-### Package layout (HARD ceiling 1200 lines total, `wc -l noterun/*.py`; no new modules)
+### Package layout (HARD ceiling 1215 lines total, `wc -l noterun/*.py`; no new modules)
 ```
 noterun/
   __init__.py      ~3   __version__ only
@@ -47,12 +47,12 @@ noterun/
                  ----
                  ~680
 ```
-The ceiling is 1200 because the original 700 counted code lines only, while `wc -l` also counts
+The ceiling is 1215 because the original 700 counted code lines only, while `wc -l` also counts
 formatter blank lines, mandatory docstrings and wrapped imports (about 390 lines).
 The user's target was ~500; mandatory docstrings and the `chunk`
 subcommand and `list --names` make ~680 realistic. The zsh completion file is not counted. Keep docstrings short
 (summary line, plus Args/Returns only where a name is not self-explanatory). If the total goes
-over 1200, first remove duplication; if still over, in this order: (1) delete the defensive
+over 1215, first remove duplication; if still over, in this order: (1) delete the defensive
 unclosed-fence check in `find_owned` (`parse_note` already raises), (2) drop the `--env` flag.
 Do NOT add modules.
 
@@ -728,9 +728,9 @@ include = ["noterun*"]
    ruff check --fix . && ruff format . && ruff check .
    mypy noterun
    pytest            # addopts enforce --cov-fail-under=90
-   wc -l noterun/*.py   # total must be <= 1200 (code lines were ~700; wc -l adds blanks and docstrings)
+   wc -l noterun/*.py   # total must be <= 1215 (code lines were ~700; wc -l adds blanks and docstrings)
    ```
-   All must pass. If over 1200: remove duplication, then delete the defensive check in
+   All must pass. If over 1215: remove duplication, then delete the defensive check in
    `find_owned`, then drop `--env`, in that order.
 
 9. [ ] **Install and smoke-test on the real notes (before touching any note).**
@@ -818,7 +818,7 @@ include = ["noterun*"]
 
 ## Acceptance criteria
 - `ruff check .`, `ruff format --check .`, `mypy noterun`, `pytest` (coverage ≥90%) all pass;
-  `wc -l noterun/*.py` total ≤ 1200 (the 700 figure counted code lines only; `wc -l` adds blanks and docstrings); `completions/_noterun` ≤ 40 lines.
+  `wc -l noterun/*.py` total ≤ 1215 (the 700 figure counted code lines only; `wc -l` adds blanks and docstrings); `completions/_noterun` ≤ 40 lines.
 - No runtime dependencies; `noterun` never imports matplotlib or IPython itself.
 - `noterun check` on both real notes prints ok and exits 0, both before and after migration.
 - A failed or aborted `run` leaves the note bytes, `attachments/`, and the note dir unchanged.

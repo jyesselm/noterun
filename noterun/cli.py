@@ -307,7 +307,8 @@ def cmd_find(args: argparse.Namespace) -> int:
     root = Path(args.dir)
     if not root.is_dir():
         raise NoterunError(f"no such folder: {root}")
-    return int(not sum(_find_in_note(rel, note, args.value) for rel, note in _notes(root)))
+    hits = sum(_find_in_note(rel, note, args.value) for rel, note in _notes(root))
+    return 0 if hits else 1
 
 
 def _timeout(value: str) -> float:
@@ -346,9 +347,14 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-# Every `cmd_<name>` function above is the handler for subcommand `<name>`.
 HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
-    name.removeprefix("cmd_"): fn for name, fn in globals().items() if name.startswith("cmd_")
+    "run": cmd_run,
+    "check": cmd_check,
+    "console": cmd_console,
+    "chunk": cmd_chunk,
+    "export": cmd_export,
+    "list": cmd_list,
+    "find": cmd_find,
 }
 
 
