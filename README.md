@@ -40,11 +40,11 @@ Windows is untested.
    `python3 -m pip install --user pipx` elsewhere.
 2. Install noterun: `pipx install git+https://github.com/jyesselm/noterun`. For development use
    `pipx install -e /path/to/checkout`.
-3. Point the project config at the published environment in your shell rc:
-   `export DMS_PY=/path/to/envs/py3/bin/python`.
+3. Install the project's Python environment at the path its `.noterun.toml` names.
 4. Add the zsh completion line below.
 
-`.noterun.toml` must only contain machine-independent values (`~`, `${VAR}`).
+`.noterun.toml` holds the same paths on every machine; use `~` for the home directory. A
+`${VAR}` is expanded too, for the rare machine that needs an override.
 
 ## zsh completion
 
